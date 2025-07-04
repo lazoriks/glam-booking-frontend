@@ -49,69 +49,78 @@ npm install react@18 react-dom@18 react-scripts
 
 # Створіть базові файли (public/index.html, src/index.js, src/App.js).
 
-## Available Scripts
+## Знизити версію React до 18
 
-In the project directory, you can run:
+npm uninstall react react-dom
+npm install react@18 react-dom@18
 
-### `npm start`
+npm install react-datepicker axios react-table
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+npm install date-fns
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 
+import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import axios from 'axios';
 
-### `npm test`
+function App() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [services, setServices] = useState([]);
+  const [selectedService, setSelectedService] = useState('');
+  const [appointments, setAppointments] = useState([]);
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/services')  // твій Spring endpoint
+      .then(res => setServices(res.data))
+      .catch(err => console.error(err));
+  }, []);
 
-### `npm run build`
+  useEffect(() => {
+    if (selectedService) {
+      axios.get(http://localhost:8080/api/appointments?service=${selectedService})
+        .then(res => setAppointments(res.data))
+        .catch(err => console.error(err));
+    }
+  }, [selectedService]);
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  return (
+    <div style={{ display: 'flex', padding: '20px' }}>
+      <div style={{ marginRight: '20px' }}>
+        <h3>Choose Date</h3>
+        <DatePicker selected={selectedDate} onChange={date => setSelectedDate(date)} />
+      </div>
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+      <div>
+        <h3>Select Service</h3>
+        <select value={selectedService} onChange={e => setSelectedService(e.target.value)}>
+          <option value="">--Select Service--</option>
+          {services.map(s => (
+            <option key={s.id} value={s.name}>{s.name}</option>
+          ))}
+        </select>
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+        <h4>Appointments</h4>
+        <table border="1">
+          <thead>
+            <tr>
+              <th>DateTime</th>
+              <th>Client</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((a, i) => (
+              <tr key={i}>
+                <td>{a.dateTime}</td>
+                <td>{${a.surname} ${a.name}, ${a.mobile}, ${a.email}}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
-### `npm run eject`
+export default App;
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
