@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     if (selectedService) {
-      axios.get(http://localhost:8080/api/appointments?service=${selectedService})
+      axios.get('http://localhost:8080/api/appointments?service=${selectedService}')
         .then(res => setAppointments(res.data))
         .catch(err => console.error(err));
     }
@@ -51,7 +51,7 @@ function App() {
             {appointments.map((a, i) => (
               <tr key={i}>
                 <td>{a.dateTime}</td>
-                <td>{${a.surname} ${a.name}, ${a.mobile}, ${a.email}}</td>
+                <td>{a.name}</td>
               </tr>
             ))}
           </tbody>
