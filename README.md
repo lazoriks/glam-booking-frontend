@@ -49,69 +49,216 @@ npm install react@18 react-dom@18 react-scripts
 
 # Створіть базові файли (public/index.html, src/index.js, src/App.js).
 
-## Available Scripts
+## Знизити версію React до 18
 
-In the project directory, you can run:
+npm uninstall react react-dom
+npm install react@18 react-dom@18
 
-### `npm start`
+npm install react-datepicker axios react-table
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+npm install date-fns
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# Geating free account in AWS and greating DataBase in RDS AWS
+- aws.amazon.com
+- Aurora and RDS
+- Databases
 
-### `npm test`
+## Connectivity & security
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Endpoint
+appointmentdb.ch8kskc0cuv1.eu-north-1.rds.amazonaws.com
 
-### `npm run build`
+### Port
+3306 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# Create database 
+Зайди в AWS Management Console → знайди RDS.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Create database → вибери:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Standard Create
 
-### `npm run eject`
+Engine options: MySQL (або Aurora MySQL-compatible)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Version: останню стабільну.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Templates: вибери Free tier.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Settings:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+DB instance identifier: appointmentdb
 
-## Learn More
+Master username: admin
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Master password: YourStrongPassword123
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+DB instance size: t3.micro (free tier)
 
-### Code Splitting
+Storage: 20 GiB (free tier).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Connectivity:
 
-### Analyzing the Bundle Size
+Створи новий VPC security group (або відкрий для свого IP порт 3306).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Постав Public access = Yes, щоб підключатись із локальної машини.
 
-### Making a Progressive Web App
+Далі — натискай Create database.
+Створення займе ~5-10 хв.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+# MySQL Workbench
 
-### Advanced Configuration
+## 1️⃣ Скачати MySQL Workbench
+Перейди на офіційний сайт:
+👉 https://dev.mysql.com/downloads/workbench/
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Завантаж версію для своєї ОС (Windows / macOS / Linux).
 
-### Deployment
+Встанови як звичайну програму.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 2️⃣ Підключитися до своєї БД на AWS
+Відкрити Workbench.
 
-### `npm run build` fails to minify
+Створити New Connection.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Вказати:
+
+Hostname: твій Endpoint з RDS (типу mydb.c5dsf4fsldk.eu-west-1.rds.amazonaws.com)
+
+Port: 3306
+
+Username: admin (чи той, що ти вказав під час створення RDS)
+
+Password: натиснути Store in Vault... та ввести пароль.
+
+Натиснути Test Connection — перевірити чи працює.
+
+# bug during connection
+Security Group (Firewall) не дозволяє підключення
+
+На AWS RDS треба в Security Groups додати правило inbound для порту 3306 (MySQL) для свого IP.
+
+Йди в AWS Management Console → EC2 → Security Groups → знайди групу, що прив'язана до твого RDS → редагуй inbound rules:
+
+Type: MYSQL/Aurora
+
+Protocol: TCP
+
+Port range: 3306
+
+Source: твій IP (можна тимчасово 0.0.0.0/0 для перевірки, але це не безпечно).
+
+# bug during install workbench
+MySQL Workbench не може запуститися, бо бракує Visual C++ 2019 Redistributable Package, який є системною бібліотекою від Microsoft.
+
+🔧 Як вирішити:
+Перейди на офіційну сторінку Microsoft:
+https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist
+
+Завантаж "x64" або "x86" версію залежно від твоєї системи:
+
+x64 — якщо у тебе 64-бітна Windows (переважно так і є)
+
+x86 — для 32-бітної Windows
+
+Встанови пакет
+
+Перезапусти MySQL Workbench
+
+# create tables
+
+use db_group_service;
+
+CREATE TABLE table_group_service (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    group_name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE db_clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name varchar(255),
+    surname VARCHAR(255),
+    mobile VARCHAR(20) NOT NULL,
+    email  VARCHAR(255)
+);
+
+CREATE TABLE db_service (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    service_name varchar(255) NOT NULL,
+    group_service_id Int,
+    price decimal(10,2),
+    period int,
+    qty_masters int,
+    FOREIGN KEY (group_service_id) REFERENCES table_group_service(id)
+);
+
+CREATE TABLE db_masters (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name varchar(255),
+    surname varchar(255),
+    mobile varchar(20),
+    group_service_id int,
+    email varchar(255),
+    FOREIGN KEY (group_service_id) REFERENCES table_group_service(id)
+);
+
+CREATE TABLE db_appointments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    datatime DATETIME NOT NULL,
+    service_id int,
+    client_id int,
+    FOREIGN KEY (service_id) REFERENCES db_service(id),
+    FOREIGN KEY (client_id) REFERENCES db_clients(id)
+);
+
+# Як заповнювати таблиці в MySQL
+## 1️⃣ Через SQL-команди (INSERT INTO)
+Це найпростіший і найпопулярніший спосіб.
+
+INSERT INTO clients (mobile, name, email)
+VALUES ('1234567890', 'Ivan Petrov', 'ivan@gmail.com');
+Можна одразу кілька записів:
+
+INSERT INTO clients (mobile, name, email)
+VALUES 
+ ('1234567890', 'Ivan Petrov', 'ivan@gmail.com'),
+ ('0987654321', 'Maria Ivanova', 'maria@gmail.com');
+ 
+## 2️⃣ Через MySQL Workbench
+Відкрий таблицю (правий клік → Select Rows).
+
+Там з’явиться табличка де можна вносити дані вручну.
+
+Потім натисни на значок ⚡️ (Apply changes), щоб зберегти
+
+# https://start.spring.io/.
+
+Project: Maven
+
+Language: Java
+
+Spring Boot: 3.2.x (або остання стабільна)
+
+Group: com.example
+
+Artifact: appointments
+
+Name: appointments
+
+Package name: com.example.appointments
+
+Packaging: Jar
+
+Java: 17 (або 21 якщо твоя IDE і AWS це підтримують)
+
+✅ Dependencies:
+Spring Web
+
+Spring Data JPA
+
+MySQL Driver
+
+Lombok
+
+Spring Boot DevTools (опціонально, для live reload)
+
+Завантаж ZIP, розпакуй, відкрий у VS Code або IntelliJ.
