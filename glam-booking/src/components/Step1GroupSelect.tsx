@@ -82,30 +82,67 @@ const groups: Group[] = [
 
 const Step1GroupSelect: React.FC<Props> = ({ onSelect }) => {
   return (
-    <div className="flex flex-col gap-12 p-6 sm:p-10 max-w-6xl mx-auto">
-      {groups.map((group, idx) => (
-        <div
-          key={group.id}
-          className={`flex flex-col md:flex-row ${
-            idx % 2 === 1 ? 'md:flex-row-reverse' : ''
-          } bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition`}
-          onClick={() => onSelect(group.id)}
-        >
-          <div className="md:w-1/2">
-            <img
-              src={group.image}
-              alt={group.name}
-              className="h-64 w-full object-cover md:h-full"
-            />
-          </div>
-          <div className="md:w-1/2 p-6 sm:p-8 flex flex-col justify-center">
-            <h2 className="text-2xl font-semibold mb-2 text-gray-800">{group.name}</h2>
-            <p className="text-gray-600">{group.description}</p>
-            <p className="text-sm font-bold text-indigo-600 mt-4">{group.duration}</p>
-            <p className="text-pink-600 text-lg italic">{group.priceRange}</p>
-          </div>
+    <div className="relative min-h-screen bg-[#fff8f5] overflow-hidden">
+
+      {/* 🌫 Прозорий фон */}
+      <div className="absolute inset-0 z-0 opacity-10">
+        <img
+          src="/images/fon.jpg"
+          alt="Background"
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Контент поверх фону */}
+      <div className="relative z-10">
+
+        {/* Header */}
+        <div className="max-w-6xl mx-auto px-6 sm:px-10 pt-6">
+          <img
+            src="/images/header.jpg"
+            alt="Header"
+            className="w-full max-h-60 object-contain mx-auto rounded-xl shadow"
+          />
         </div>
-      ))}
+
+        {/* Секції */}
+        <div className="flex flex-col gap-12 p-6 sm:p-10 max-w-6xl mx-auto">
+          {groups.map((group, idx) => (
+            <div
+              key={group.id}
+              className={`flex flex-col md:flex-row ${
+                idx % 2 === 1 ? 'md:flex-row-reverse' : ''
+                } bg-white border border-pink-100 rounded-full shadow-md hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 ease-in-out cursor-pointer overflow-hidden`}
+
+
+              onClick={() => onSelect(group.id)}
+            >
+              <div className="md:w-1/2 bg-white flex items-center justify-center">
+                <img
+                  src={group.image}
+                  alt={group.name}
+                  className="h-40 md:h-48 w-full object-contain bg-white"
+                />
+              </div>
+              <div className="md:w-1/2 p-5 sm:p-7 flex flex-col justify-center bg-gradient-to-br from-pink-50 to-yellow-50">
+                <h2 className="text-2xl md:text-3xl font-bold text-pink-700 mb-2 tracking-wide">{group.name}</h2>
+                <p className="text-gray-700 text-lg">{group.description}</p>
+                <p className="text-md font-semibold text-yellow-600 mt-3">{group.duration}</p>
+                <p className="text-pink-600 text-lg font-medium italic">{group.priceRange}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 🌸 Декор внизу */}
+        <div className="w-full mt-10">
+          <img
+            src="/images/flutter.jpg"
+            alt="Flutter Decoration"
+            className="w-full max-h-40 object-contain mx-auto"
+          />
+        </div>
+      </div>
     </div>
   );
 };
