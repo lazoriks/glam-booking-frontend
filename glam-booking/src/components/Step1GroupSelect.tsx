@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import React from 'react';
 
 type Group = {
@@ -32,22 +33,30 @@ const groups: Group[] = [
   },
   {
     id: 3,
-    name: 'Make-up',
-    description: 'day/evening make-up.',
-    duration: '45–70 min',
-    priceRange: '€35 – €50',
-    image: '/images/makeup.jpg',
+    name: 'Brows & Lashes',
+    description: 'Tinting, shaping, lamination and lifting.',
+    duration: '20–45 min',
+    priceRange: '€15 – €40',
+    image: '/images/brows.jpg',    
   },
   {
     id: 4,
-    name: 'Treatments',
-    description: 'Keratin/Botox/Nanoplastics.',
-    duration: '60–90 min',
-    priceRange: '€40 – €60',
-    image: '/images/treatments.jpg',
+    name: 'Permanent',
+    description: 'Long-lasting makeup and enhancements.',
+    duration: '90–120 min',
+    priceRange: '€120 – €200',
+    image: '/images/permanent.jpg',    
   },
   {
     id: 5,
+    name: 'Waxing',
+    description: 'Facial and body waxing for smooth skin.',
+    duration: '15–40 min',
+    priceRange: '€10 – €35',
+    image: '/images/waxing.jpg',    
+  },
+  {
+    id: 6,
     name: 'Massage',
     description: 'Professional massage.',
     duration: '30–60 min',
@@ -55,28 +64,20 @@ const groups: Group[] = [
     image: '/images/massage.jpg',
   },
   {
-    id: 6,
-    name: 'Brows & Lashes',
-    description: 'Tinting, shaping, lamination and lifting.',
-    duration: '20–45 min',
-    priceRange: '€15 – €40',
-    image: '/images/brows.jpg',
-  },
-  {
     id: 7,
-    name: 'Permanent',
-    description: 'Long-lasting makeup and enhancements.',
-    duration: '90–120 min',
-    priceRange: '€120 – €200',
-    image: '/images/permanent.jpg',
+    name: 'Treatments',
+    description: 'Keratin/Botox/Nanoplastics.',
+    duration: '60–90 min',
+    priceRange: '€40 – €60',
+    image: '/images/treatments.jpg',
   },
   {
     id: 8,
-    name: 'Waxing',
-    description: 'Facial and body waxing for smooth skin.',
-    duration: '15–40 min',
-    priceRange: '€10 – €35',
-    image: '/images/waxing.jpg',
+    name: 'Make-up',
+    description: 'day/evening make-up.',
+    duration: '45–70 min',
+    priceRange: '€35 – €50',
+    image: '/images/makeup.jpg',
   },
 ];
 
@@ -108,15 +109,18 @@ const Step1GroupSelect: React.FC<Props> = ({ onSelect }) => {
         {/* Секції */}
         <div className="flex flex-col gap-12 p-6 sm:p-10 max-w-6xl mx-auto">
           {groups.map((group, idx) => (
-            <div
-              key={group.id}
-              className={`flex flex-col md:flex-row ${
-                idx % 2 === 1 ? 'md:flex-row-reverse' : ''
-                } bg-white border border-pink-100 rounded-full shadow-md hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 ease-in-out cursor-pointer overflow-hidden`}
-
-
-              onClick={() => onSelect(group.id)}
-            >
+            <motion.div
+                key={group.id}
+                initial={{ opacity: 0, x: idx % 2 === 0 ? -50 : 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: idx * 0.1, type: "spring", stiffness: 100 }}
+                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.03 }}
+                className={`flex flex-col md:flex-row ${
+                  idx % 2 === 1 ? 'md:flex-row-reverse' : ''
+                } bg-white border border-pink-100 rounded-xl shadow-md cursor-pointer overflow-hidden`}
+                onClick={() => onSelect(group.id)}
+              >
               <div className="md:w-1/2 bg-white flex items-center justify-center">
                 <img
                   src={group.image}
@@ -124,13 +128,13 @@ const Step1GroupSelect: React.FC<Props> = ({ onSelect }) => {
                   className="h-40 md:h-48 w-full object-contain bg-white"
                 />
               </div>
-              <div className="md:w-1/2 p-5 sm:p-7 flex flex-col justify-center bg-gradient-to-br from-pink-50 to-yellow-50">
+              <div className="md:w-1/2 p-5 sm:p-7 flex flex-col items-center text-center justify-center bg-gradient-to-br from-pink-50 to-yellow-50">
                 <h2 className="text-2xl md:text-3xl font-bold text-pink-700 mb-2 tracking-wide">{group.name}</h2>
                 <p className="text-gray-700 text-lg">{group.description}</p>
                 <p className="text-md font-semibold text-yellow-600 mt-3">{group.duration}</p>
                 <p className="text-pink-600 text-lg font-medium italic">{group.priceRange}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
