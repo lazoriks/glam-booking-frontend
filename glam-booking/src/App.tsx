@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import Step1GroupSelect from './components/Step1GroupSelect';
+import Step2ServiceSelect from './components/Step2ServiceSelect';
 
 function App() {
   const [groupId, setGroupId] = useState<number | null>(null);
 
+  const handleContinue = (selectedServices: any[]) => {
+    console.log('Continue to step 3 with:', selectedServices);
+    // TODO: step 3, setSelectedServices(selectedServices), setStep(3), etc.
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <>
       {!groupId ? (
-        <Step1GroupSelect onSelect={(id) => setGroupId(id)} />
+        <Step1GroupSelect onSelect={setGroupId} />
       ) : (
-        <p className="text-center mt-10 text-xl">
-          Group ID selected: {groupId} — loading next step...
-        </p>
+        <Step2ServiceSelect groupId={groupId} onContinue={handleContinue} />
       )}
-    </div>
+    </>
   );
 }
 
