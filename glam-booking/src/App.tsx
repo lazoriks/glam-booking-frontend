@@ -15,7 +15,11 @@ function App() {
       {!groupId ? (
         <Step1GroupSelect onSelect={setGroupId} />
       ) : (
-        <Step2ServiceSelect groupId={groupId} onContinue={handleContinue} />
+        <Step2ServiceSelect
+          groupId={groupId}
+          onContinue={handleContinue}
+          onBack={() => setGroupId(null)}
+        />
       )}
     </>
   );
