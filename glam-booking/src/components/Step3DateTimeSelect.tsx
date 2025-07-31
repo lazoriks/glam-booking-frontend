@@ -1,88 +1,65 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-// Типи даних
-interface Master {
+type Service = {
   id: number;
-  firstName: string;
-  surname: string;
-}
+};
 
-interface AvailableDayDto {
-  date: string; // формат YYYY-MM-DD
-  times: string[]; // ['13:00', '13:15', ...]
-}
-
-interface Service {
-  id: number;
-  serviceName: string;
-  price: number;
-  period: number;
-  description?: string;
-}
-
-interface Props {
+type Props = {
   groupId: number;
   services: Service[];
   onBack: () => void;
   onSelect: (masterId: number, datetime: string) => void;
-}
+};
+
+type Master = {
+  id: number;
+  firstName: string;
+  surname: string;
+};
+
+type AvailableDayDto = {
+  date: string;
+  times: string[];
+};
 
 const Step3DateTimeSelect: React.FC<Props> = ({ groupId, services, onBack, onSelect }) => {
   const [masters, setMasters] = useState<Master[]>([]);
-  const [masterId, setMasterId] = useState<number | null>(null);
+  const [selectedMaster, setSelectedMaster] = useState<number | null>(null);
   const [available, setAvailable] = useState<AvailableDayDto[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [selectedDateTime, setSelectedDateTime] = useState<string | null>(null);
 
-  // Завантаження майстрів
   useEffect(() => {
-    fetch('https://appointmentspring-206160864813.us-central1.run.app/api/masters')
-      .then(res => res.json())
+    fetch(`https://appointmentspring-206160864813.us-central1.run.app/api/masters/group/${groupId}`)
+      .then((res) => res.json())
       .then(setMasters)
-      .catch(err => console.error('Failed to load masters', err));
-  }, []);
+      .catch(console.error);
+  }, [groupId]);
 
-  // Завантаження доступності
   useEffect(() => {
-    if (!masterId) return;
-    fetch(`https://appointmentspring-206160864813.us-central1.run.app/api/appointments/available?masterId=${masterId}`)
-      .then(res => res.json())
+    if (!selectedMaster) return;
+    const query = `masterId=${selectedMaster}&serviceIds=${services.map(s => s.id).join(",")}`;
+    fetch(`https://appointmentspring-206160864813.us-central1.run.app/api/appointments/available?${query}`)
+      .then((res) => res.json())
       .then(setAvailable)
-      .catch(err => console.error('Failed to load slots', err));
-  }, [masterId]);
-
-  const handleBook = () => {
-    if (masterId && selectedDate && selectedTime) {
-      const datetime = `${selectedDate}T${selectedTime}`;
-      onSelect(masterId, datetime);
-    }
-  };
+      .catch(console.error);
+  }, [selectedMaster, services]);
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
-      <h2 className="text-2xl font-bold text-center">Select Date & Time</h2>
+    <div className="p-4 max-w-2xl mx-auto space-y-6">
+      <button onClick={onBack} className="text-pink-600 font-medium">{'← Back'}</button>
+      <h2 className="text-2xl font-bold text-center">Select Master & Time</h2>
 
-      {/* Назад */}
-      <button
-        onClick={onBack}
-        className="text-sm text-blue-500 hover:underline mb-2"
-      >
-        ← Back
-      </button>
-
-      {/* Вибір майстра */}
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold">Choose Master:</label>
+      <div>
+        <label className="block font-medium mb-2">Choose Master:</label>
         <select
-          className="border rounded p-2"
-          value={masterId || ''}
-          onChange={e => {
-            setMasterId(Number(e.target.value));
-            setSelectedDate('');
-            setSelectedTime('');
+          className="w-full border rounded p-2"
+          value={selectedMaster ?? ""}
+          onChange={(e) => {
+            setSelectedMaster(Number(e.target.value));
+            setSelectedDateTime(null);
           }}
         >
-          <option value="">-- Select --</option>
+          <option value="" disabled>-- Select --</option>
           {masters.map(m => (
             <option key={m.id} value={m.id}>
               {m.firstName} {m.surname}
@@ -91,53 +68,47 @@ const Step3DateTimeSelect: React.FC<Props> = ({ groupId, services, onBack, onSel
         </select>
       </div>
 
-      {/* Вибір дати */}
-      {available.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto py-2">
-          {available.map((day) => (
-            <button
-              key={day.date}
-              className={`px-4 py-2 rounded-full border text-sm min-w-max ${
-                selectedDate === day.date ? 'bg-pink-500 text-white' : 'bg-white'
-              }`}
-              onClick={() => {
-                setSelectedDate(day.date);
-                setSelectedTime('');
-              }}
-            >
-              {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
-            </button>
-          ))}
+      {selectedMaster && available.length > 0 && (
+        <div>
+          <label className="block font-medium mb-2">Choose Time:</label>
+          <div className="space-y-4">
+            {available.map(day => (
+              <div key={day.date}>
+                <p className="font-semibold mb-1">{day.date}</p>
+                <div className="flex flex-wrap gap-2">
+                  {day.times.map(time => {
+                    const dateTimeStr = `${day.date}T${time}`;
+                    return (
+                      <button
+                        key={time}
+                        className={`px-3 py-1 rounded-full border ${
+                          selectedDateTime === dateTimeStr
+                            ? "bg-pink-500 text-white border-pink-500"
+                            : "hover:bg-pink-100"
+                        }`}
+                        onClick={() => setSelectedDateTime(dateTimeStr)}
+                      >
+                        {time}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Вибір часу */}
-      {selectedDate && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          {available.find(d => d.date === selectedDate)?.times.map((time) => (
-            <button
-              key={time}
-              className={`border rounded p-2 text-center ${
-                selectedTime === time ? 'bg-pink-500 text-white' : ''
-              }`}
-              onClick={() => setSelectedTime(time)}
-            >
-              {time}
-            </button>
-          ))}
+      {selectedDateTime && (
+        <div className="text-center mt-6">
+          <button
+            onClick={() => onSelect(selectedMaster!, selectedDateTime)}
+            className="px-6 py-2 bg-black text-white rounded-full hover:bg-pink-600 transition"
+          >
+            Book appointment
+          </button>
         </div>
       )}
-
-      {/* Кнопка */}
-      <div className="text-center pt-4">
-        <button
-          className="px-6 py-3 bg-black text-white rounded-full hover:bg-pink-600 transition"
-          onClick={handleBook}
-          disabled={!selectedDate || !selectedTime || !masterId}
-        >
-          Book appointment
-        </button>
-      </div>
     </div>
   );
 };
