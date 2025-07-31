@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 
+type ClientData = {
+  name: string;
+  mobile: string;
+  email: string;
+};
+
 interface Props {
   onBack: () => void;
-  onSubmit: (client: { name: string; mobile: string; email: string }) => void;
+  onSubmit: (client: ClientData) => void;
   isSubmitting: boolean;
 }
 
@@ -18,7 +24,7 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md space-y-6">
-      <h2 className="text-xl font-bold text-center">Enter Your Details</h2>
+      <h2 className="text-xl font-bold text-center text-pink-700">Enter Your Details</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -28,18 +34,18 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
             required
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full border rounded p-2"
+            className="w-full border rounded p-2 focus:outline-pink-500"
           />
         </div>
 
         <div>
-          <label className="block font-medium">Mobile *</label>
+          <label className="block font-medium">Mobile <span className="text-red-500">*</span></label>
           <input
             type="text"
             required
             value={mobile}
             onChange={e => setMobile(e.target.value)}
-            className="w-full border rounded p-2"
+            className="w-full border rounded p-2 focus:outline-pink-500"
           />
         </div>
 
@@ -49,19 +55,23 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full border rounded p-2"
+            className="w-full border rounded p-2 focus:outline-pink-500"
           />
         </div>
 
         <div className="flex justify-between pt-4">
-          <button type="button" onClick={onBack} className="text-blue-500 hover:underline">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-pink-500 hover:underline"
+          >
             ← Back
           </button>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-black text-white px-5 py-2 rounded-full hover:bg-pink-600 transition"
+            className="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition"
           >
             {isSubmitting ? 'Booking...' : 'Confirm'}
           </button>

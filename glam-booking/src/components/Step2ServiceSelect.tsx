@@ -14,6 +14,18 @@ type Props = {
   onBack: () => void;
 };
 
+// Якщо хочеш — можна витягувати назву з API, а поки вручну:
+const groupNames: Record<number, string> = {
+  1: "Hair",
+  2: "Nails",
+  3: "Brows & Lashes",
+  4: "Permanent",
+  5: "Waxing",
+  6: "Massage",
+  7: "Treatments",
+  8: "Make-up",
+};
+
 const Step2ServiceSelect: React.FC<Props> = ({ groupId, onContinue, onBack }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -38,47 +50,58 @@ const Step2ServiceSelect: React.FC<Props> = ({ groupId, onContinue, onBack }) =>
   const totalTime = selectedServices.reduce((sum, s) => sum + s.period, 0);
 
   return (
-    <div className="p-4 pb-28 max-w-2xl mx-auto space-y-4 relative">
-      <button onClick={onBack} className="text-pink-600 font-medium mb-4">{'← Back'}</button>
-      <h2 className="text-2xl font-bold text-center">Choose Services</h2>
-
-      {services.map((s) => (
-        <div key={s.id} className="flex justify-between items-center border-b py-3">
-          <div>
-            <p className="font-semibold">{s.serviceName}</p>
-            <p className="text-gray-500 text-sm">{s.period} min</p>
-            <p className="text-lg font-bold">€{s.price}</p>
-          </div>
-          <button
-            onClick={() => toggleSelect(s.id)}
-            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
-              selected.has(s.id) ? "bg-pink-500 border-pink-500 text-white" : "border-gray-400"
-            }`}
-          >
-            {selected.has(s.id) ? "✓" : "+"}
-          </button>
-        </div>
-      ))}
-
-      {/* Фіксована нижня панель */}
-      {selected.size > 0 && (
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-md p-4 flex flex-col items-center sm:flex-row sm:justify-between z-50">
-          <div className="text-center sm:text-left">
-            <p className="text-lg">
-              <strong>{selected.size}</strong> service(s), <strong>{totalTime}</strong> min
-            </p>
-            <p className="text-xl font-bold text-pink-600">€{totalPrice.toFixed(2)}</p>
-          </div>
-          <button
-            className="mt-3 sm:mt-0 px-6 py-2 bg-black text-white rounded-full hover:bg-pink-600 transition"
-            onClick={() => onContinue(selectedServices)}
-          >
-            Continue
-          </button>
-        </div>
-      )}
+  <div className="p-4 pb-32 max-w-2xl mx-auto space-y-4 relative">
+    <div className="flex items-center gap-4 mb-4">
+      <button
+        onClick={() => {
+          setSelected(new Set());
+          onBack();
+        }}
+        className="text-2xl text-pink-600 hover:text-pink-800"
+      >
+        ←
+      </button>
+      <h2 className="text-2xl font-bold">{groupNames[groupId] || "Services"}</h2>
     </div>
-  );
+
+    {services.map((s) => (
+      <div key={s.id} className="flex justify-between items-center border-b py-3">
+        <div>
+          <p className="font-semibold">{s.serviceName}</p>
+          <p className="text-gray-500 text-sm">{s.period} min</p>
+          <p className="text-lg font-bold">€{s.price}</p>
+        </div>
+        <button
+          onClick={() => toggleSelect(s.id)}
+          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
+            selected.has(s.id) ? "bg-pink-500 border-pink-500 text-white" : "border-gray-400"
+          }`}
+        >
+          {selected.has(s.id) ? "✓" : "+"}
+        </button>
+      </div>
+    ))}
+
+    {/* Фіксований нижній блок */}
+    {selected.size > 0 && (
+      <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-md p-4 flex flex-col items-center sm:flex-row sm:justify-between z-50">
+        <div className="text-center sm:text-left">
+          <p className="text-lg">
+            <strong>{selected.size}</strong> service(s), <strong>{totalTime}</strong> min
+          </p>
+          <p className="text-xl font-bold text-pink-600">€{totalPrice.toFixed(2)}</p>
+        </div>
+        <button
+          className="mt-3 sm:mt-0 px-6 py-2 bg-black text-white rounded-full hover:bg-pink-600 transition"
+          onClick={() => onContinue(selectedServices)}
+        >
+          Continue
+        </button>
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default Step2ServiceSelect;
