@@ -47,7 +47,12 @@ function App() {
     setStep(4);
   };
 
-  const handleClientSubmit = async (client: { name: string; mobile: string; email: string }) => {
+  const handleClientSubmit = async (client: {
+    name: string;
+    surname: string;
+    mobile: string;
+    email: string;
+  }) => {
     if (!selectedMasterId || !selectedDatetime || selectedServices.length === 0) return;
 
     setIsSubmitting(true);
@@ -59,11 +64,12 @@ function App() {
         body: JSON.stringify({
           datetime: selectedDatetime,
           serviceId: selectedServices[0].id,
-          serviceIds: selectedServices.map(s => s.id),
+          serviceIds: selectedServices.map((s) => s.id),
           masterId: selectedMasterId,
-          name: client.name,
-          mobile: client.mobile,
-          email: client.email,
+          clientName: client.name,
+          clientSurname: client.surname,
+          clientMobile: client.mobile,
+          clientEmail: client.email,
         }),
       });
 
@@ -86,42 +92,25 @@ function App() {
     }
   };
 
-  const stepLabels = ['Group', 'Services', 'Time', 'Client'];
+  const StepIndicator = () => (
+    <div className="flex justify-center items-center py-4 space-x-3 text-sm text-gray-600">
+      {[1, 2, 3, 4].map((s) => (
+        <span
+          key={s}
+          className={`px-3 py-1 rounded-full border ${
+            step === s ? 'bg-pink-500 text-white' : 'bg-white'
+          }`}
+        >
+          Step {s}
+        </span>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#fff8f5] text-gray-800">
-      {/* 🔼 Навігація-кроки */}
-      <div className="flex justify-center gap-4 pt-4 pb-2 text-sm sm:text-base">
-        {stepLabels.map((label, index) => {
-          const current = index + 1;
-          const isActive = step === current;
-          const isDone = step > current;
+    <>
+      <StepIndicator />
 
-          return (
-            <div
-              key={label}
-              className={`flex items-center gap-2 ${
-                isActive ? 'text-pink-600 font-bold' : isDone ? 'text-gray-500' : 'text-gray-400'
-              }`}
-            >
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs ${
-                  isActive
-                    ? 'bg-pink-500 text-white border-pink-500'
-                    : isDone
-                    ? 'bg-gray-300 text-white border-gray-300'
-                    : 'border-gray-400'
-                }`}
-              >
-                {current}
-              </div>
-              <span className="hidden sm:inline">{label}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 🔄 Основні кроки */}
       {step === 1 && <Step1GroupSelect onSelect={handleGroupSelect} />}
 
       {step === 2 && groupId !== null && (
@@ -149,7 +138,6 @@ function App() {
         />
       )}
 
-      {/* ✅ Успішна бронь */}
       {success && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow text-center space-y-4">
@@ -163,7 +151,7 @@ function App() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
