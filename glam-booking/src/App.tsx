@@ -3,6 +3,7 @@ import Step1GroupSelect from './components/Step1GroupSelect';
 import Step2ServiceSelect from './components/Step2ServiceSelect';
 import Step3DateTimeSelect from './components/Step3DateTimeSelect';
 import Step4ClientForm from './components/Step4ClientForm';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 interface Service {
   id: number;
@@ -52,6 +53,7 @@ function App() {
     surname: string;
     mobile: string;
     email: string;
+    googleId?: string;
   }) => {
     if (!selectedMasterId || !selectedDatetime || selectedServices.length === 0) return;
 
@@ -64,12 +66,13 @@ function App() {
         body: JSON.stringify({
           datetime: selectedDatetime,
           serviceId: selectedServices[0].id,
-          serviceIds: selectedServices.map((s) => s.id),
+          serviceIds: selectedServices.map(s => s.id),
           masterId: selectedMasterId,
           clientName: client.name,
           clientSurname: client.surname,
           clientMobile: client.mobile,
           clientEmail: client.email,
+          clientGoogleId: client.googleId,
         }),
       });
 
@@ -92,66 +95,51 @@ function App() {
     }
   };
 
-  const StepIndicator = () => (
-    <div className="flex justify-center items-center py-4 space-x-3 text-sm text-gray-600">
-      {[1, 2, 3, 4].map((s) => (
-        <span
-          key={s}
-          className={`px-3 py-1 rounded-full border ${
-            step === s ? 'bg-pink-500 text-white' : 'bg-white'
-          }`}
-        >
-          Step {s}
-        </span>
-      ))}
-    </div>
-  );
-
   return (
-    <>
-      <StepIndicator />
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
+      <>
+        {step === 1 && <Step1GroupSelect onSelect={handleGroupSelect} />}
 
-      {step === 1 && <Step1GroupSelect onSelect={handleGroupSelect} />}
+        {step === 2 && groupId !== null && (
+          <Step2ServiceSelect
+            groupId={groupId}
+            onContinue={handleContinueFromStep2}
+            onBack={handleBackToStep1}
+          />
+        )}
 
-      {step === 2 && groupId !== null && (
-        <Step2ServiceSelect
-          groupId={groupId}
-          onContinue={handleContinueFromStep2}
-          onBack={handleBackToStep1}
-        />
-      )}
+        {step === 3 && groupId !== null && (
+          <Step3DateTimeSelect
+            groupId={groupId}
+            services={selectedServices}
+            onBack={handleBackToStep2}
+            onSelect={handleAppointmentSelect}
+          />
+        )}
 
-      {step === 3 && groupId !== null && (
-        <Step3DateTimeSelect
-          groupId={groupId}
-          services={selectedServices}
-          onBack={handleBackToStep2}
-          onSelect={handleAppointmentSelect}
-        />
-      )}
+        {step === 4 && (
+          <Step4ClientForm
+            onBack={handleBackToStep2}
+            onSubmit={handleClientSubmit}
+            isSubmitting={isSubmitting}
+          />
+        )}
 
-      {step === 4 && (
-        <Step4ClientForm
-          onBack={handleBackToStep2}
-          onSubmit={handleClientSubmit}
-          isSubmitting={isSubmitting}
-        />
-      )}
-
-      {success && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow text-center space-y-4">
-            <p className="text-lg font-semibold text-green-600">Appointment booked successfully!</p>
-            <button
-              onClick={() => setStep(1)}
-              className="px-6 py-2 bg-pink-600 text-white rounded-full hover:bg-pink-700"
-            >
-              OK
-            </button>
+        {success && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded shadow text-center space-y-4">
+              <p className="text-lg font-semibold text-green-600">Appointment booked successfully!</p>
+              <button
+                onClick={() => setStep(1)}
+                className="px-6 py-2 bg-pink-600 text-white rounded-full hover:bg-pink-700"
+              >
+                OK
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </>
+    </GoogleOAuthProvider>
   );
 }
 

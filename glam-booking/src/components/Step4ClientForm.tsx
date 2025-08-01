@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
@@ -28,9 +28,24 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
   const [email, setEmail] = useState('');
   const [googleId, setGoogleId] = useState<string | undefined>();
 
+  // Load saved data
+  useEffect(() => {
+    const saved = localStorage.getItem('clientData');
+    if (saved) {
+      const data = JSON.parse(saved);
+      setName(data.name || '');
+      setSurname(data.surname || '');
+      setMobile(data.mobile || '');
+      setEmail(data.email || '');
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, surname, mobile, email, googleId });
+
+    const client = { name, surname, mobile, email, googleId };
+    localStorage.setItem('clientData', JSON.stringify(client));
+    onSubmit(client);
   };
 
   const handleGoogleSuccess = (credentialResponse: any) => {
@@ -89,16 +104,14 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
           />
         </div>
 
-        {/* Google Login Button Above Confirm */}
-        <div className="pt-4">          
+        <div className="pt-4">
           <div className="text-center font-semibold text-gray-500 pb-2">OR</div>
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-2">
             <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log("Login Failed")} />
-          </div>          
+          </div>
           <div className="border-t-2 border-gray-200 mb-4" />
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-between pt-2">
           <button
             type="button"
