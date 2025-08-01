@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import React, { useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 interface Props {
   onBack: () => void;
@@ -13,11 +14,11 @@ interface Props {
   isSubmitting: boolean;
 }
 
-interface GoogleTokenPayload {
-  sub: string;
-  email: string;
+interface GoogleUser {
   given_name: string;
   family_name: string;
+  email: string;
+  sub: string;
 }
 
 const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) => {
@@ -25,41 +26,25 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
   const [surname, setSurname] = useState('');
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
-  const [googleId, setGoogleId] = useState<string | undefined>(undefined);
+  const [googleId, setGoogleId] = useState<string | undefined>();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ name, surname, mobile, email, googleId });
   };
 
-  const handleGoogleLogin = (response: any) => {
-    try {
-      const decoded = jwtDecode<GoogleTokenPayload>(response.credential);
-      setName(decoded.given_name || '');
-      setSurname(decoded.family_name || '');
-      setEmail(decoded.email || '');
-      setGoogleId(decoded.sub); // Унікальний ID користувача Google
-    } catch (err) {
-      console.error('Invalid Google token', err);
-    }
+  const handleGoogleSuccess = (credentialResponse: any) => {
+    if (!credentialResponse.credential) return;
+    const decoded = jwtDecode<GoogleUser>(credentialResponse.credential);
+    setName(decoded.given_name);
+    setSurname(decoded.family_name);
+    setEmail(decoded.email);
+    setGoogleId(decoded.sub);
   };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-md space-y-6">
       <h2 className="text-xl font-bold text-center">Enter Your Details</h2>
-
-      {/* Google Login */}
-      <div id="google-login" className="flex justify-center">
-        <div
-          className="g_id_signin"
-          data-type="standard"
-          data-size="large"
-          data-theme="outline"
-          data-text="signin_with"
-          data-shape="pill"
-          data-logo_alignment="left"
-        ></div>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -77,7 +62,6 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
           <label className="block font-medium">Surname</label>
           <input
             type="text"
-            required
             value={surname}
             onChange={e => setSurname(e.target.value)}
             className="w-full border rounded p-2"
@@ -105,8 +89,22 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
           />
         </div>
 
-        <div className="flex justify-between pt-4">
-          <button type="button" onClick={onBack} className="text-blue-500 hover:underline">
+        {/* Google Login Button Above Confirm */}
+        <div className="pt-4">          
+          <div className="text-center font-semibold text-gray-500 pb-2">OR</div>
+          <div className="flex justify-center mb-6">
+            <GoogleLogin onSuccess={handleGoogleSuccess} onError={() => console.log("Login Failed")} />
+          </div>          
+          <div className="border-t-2 border-gray-200 mb-4" />
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-between pt-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-blue-500 hover:underline"
+          >
             ← Back
           </button>
 
@@ -119,25 +117,6 @@ const Step4ClientForm: React.FC<Props> = ({ onBack, onSubmit, isSubmitting }) =>
           </button>
         </div>
       </form>
-
-      {/* Load Google script and setup callback */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-          window.handleGoogleLogin = ${handleGoogleLogin.toString()};
-          window.onload = function () {
-            google.accounts.id.initialize({
-              client_id: "${process.env.REACT_APP_GOOGLE_CLIENT_ID}",
-              callback: handleGoogleLogin
-            });
-            google.accounts.id.renderButton(
-              document.getElementById("google-login"),
-              { theme: "outline", size: "large" }
-            );
-          };
-        `,
-        }}
-      />
     </div>
   );
 };
