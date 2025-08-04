@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Step1GroupSelect from './components/Step1GroupSelect';
 import Step2ServiceSelect from './components/Step2ServiceSelect';
 import Step3DateTimeSelect from './components/Step3DateTimeSelect';
@@ -21,6 +21,19 @@ function App() {
   const [selectedDatetime, setSelectedDatetime] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // 💡 Зчитування groupId з URL при завантаженні
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const group = params.get('group');
+    if (group) {
+      const parsed = parseInt(group, 10);
+      if (!isNaN(parsed)) {
+        setGroupId(parsed);
+        setStep(2); // одразу на крок 2
+      }
+    }
+  }, []);
 
   const handleGroupSelect = (id: number) => {
     setGroupId(id);
