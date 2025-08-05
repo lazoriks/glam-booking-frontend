@@ -1,88 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 
-const TABS = ['db_appointments', 'db_service', 'db_masters', 'db_clients'] as const;
-type Tab = typeof TABS[number];
+type Appointment = {
+  id: number;
+  datatime: string;
+  client: { firstName: string; surname: string; mobile: string };
+  master: { firstName: string; surname: string };
+  services: { serviceName: string }[];
+};
 
-const today = new Date().toISOString().split("T")[0];
+type Service = {
+  id: number;
+  serviceName: string;
+  price: number;
+  period: number;
+};
+
+type Master = {
+  id: number;
+  firstName: string;
+  surname: string;
+};
+
+type Client = {
+  id: number;
+  firstName: string;
+  surname: string;
+  mobile: string;
+  email: string;
+};
+
+type Tab = "appointments" | "services" | "masters" | "clients";
 
 const AdminPage: React.FC = () => {
   const [authenticated, setAuthenticated] = useState(false);
-  const [login, setLogin] = useState('');
-  const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<Tab>('db_appointments');
-  const [data, setData] = useState<any[]>([]);
-  const [fromDate, setFromDate] = useState(today);
-  const [toDate, setToDate] = useState(today);
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [tab, setTab] = useState<Tab>("appointments");
+
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [masters, setMasters] = useState<Master[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+
+  const [fromDate, setFromDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [toDate, setToDate] = useState(() => new Date().toISOString().split("T")[0]);
+
+  const API = "https://appointmentspring-206160864813.us-central1.run.app/api/admin";
+
+  const fetchData = useCallback(() => {
+    if (!authenticated) return;
+
+    if (tab === "appointments") {
+      fetch(`${API}/appointments?from=${fromDate}&to=${toDate}`)
+        .then((res) => res.json())
+        .then(setAppointments);
+    } else if (tab === "services") {
+      fetch(`${API}/services`).then((res) => res.json()).then(setServices);
+    } else if (tab === "masters") {
+      fetch(`${API}/masters`).then((res) => res.json()).then(setMasters);
+    } else if (tab === "clients") {
+      fetch(`${API}/clients`).then((res) => res.json()).then(setClients);
+    }
+  }, [tab, fromDate, toDate, authenticated]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('adminAuth');
-    if (saved === 'true') setAuthenticated(true);
-  }, []);
-
-  const handleLogin = () => {
-    if (login === 'admin' && password === 'Beauty2025') {
-      setAuthenticated(true);
-      localStorage.setItem('adminAuth', 'true');
-    } else {
-      alert('Wrong credentials');
-    }
-  };
-
-  const fetchData = () => {
-    let url = `https://appointmentspring-206160864813.us-central1.run.app/api/admin/${activeTab}`;
-    if (activeTab === 'db_appointments') {
-      url += `?from=${fromDate}&to=${toDate}`;
-    }
-
-    fetch(url)
-      .then(res => res.json())
-      .then(setData)
-      .catch(console.error);
-  };
-
-  useEffect(() => {
-    if (authenticated) fetchData();
-  }, [authenticated, activeTab]);
-
-  const handleAdd = () => {
-    alert(`Add new to ${activeTab}`);
-  };
-
-  const handleEdit = (item: any) => {
-    alert(`Edit item ${item.id} in ${activeTab}`);
-  };
-
-  const handleDelete = (id: number) => {
-    if (window.confirm('Delete this item?')) {
-      fetch(`https://appointmentspring-206160864813.us-central1.run.app/api/admin/${activeTab}/${id}`, {
-        method: 'DELETE',
-      })
-        .then(() => fetchData())
-        .catch(console.error);
-    }
-  };
+    fetchData();
+  }, [fetchData]);
 
   if (!authenticated) {
     return (
-      <div className="max-w-sm mx-auto mt-20 space-y-4 p-6 border rounded shadow">
-        <h2 className="text-xl font-bold text-center">Admin Login</h2>
+      <div className="p-6 max-w-md mx-auto space-y-4">
+        <h2 className="text-2xl font-bold text-center">Admin Login</h2>
         <input
           type="text"
           placeholder="Login"
           value={login}
-          onChange={e => setLogin(e.target.value)}
-          className="w-full p-2 border rounded"
+          onChange={(e) => setLogin(e.target.value)}
+          className="w-full border rounded p-2"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border rounded p-2"
         />
         <button
-          onClick={handleLogin}
-          className="w-full bg-black text-white py-2 rounded hover:bg-pink-600 transition"
+          onClick={() => {
+            if (login === "admin" && password === "Beauty2025") {
+              setAuthenticated(true);
+            } else {
+              alert("Invalid credentials");
+            }
+          }}
+          className="w-full bg-black text-white py-2 rounded hover:bg-pink-600"
         >
           Login
         </button>
@@ -91,82 +103,156 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Tabs */}
-      <div className="flex gap-4 border-b pb-2">
-        {TABS.map(tab => (
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="flex gap-4 mb-6">
+        {["appointments", "services", "masters", "clients"].map((t) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 border-b-2 ${
-              activeTab === tab ? 'border-pink-600 font-bold' : 'border-transparent'
+            key={t}
+            onClick={() => setTab(t as Tab)}
+            className={`px-4 py-2 rounded-full ${
+              tab === t ? "bg-pink-600 text-white" : "bg-gray-200"
             }`}
           >
-            {tab}
+            {t}
           </button>
         ))}
       </div>
 
-      {/* Filter for appointments */}
-      {activeTab === 'db_appointments' && (
-        <div className="flex gap-4 items-center">
+      {/* --- Filters for appointments --- */}
+      {tab === "appointments" && (
+        <div className="flex gap-4 mb-4 items-end">
           <div>
-            <label className="block text-sm">From</label>
+            <label>From</label>
             <input
               type="date"
               value={fromDate}
-              onChange={e => setFromDate(e.target.value)}
-              className="border p-2 rounded"
+              onChange={(e) => setFromDate(e.target.value)}
+              className="border rounded p-2 ml-2"
             />
           </div>
           <div>
-            <label className="block text-sm">To</label>
+            <label>To</label>
             <input
               type="date"
               value={toDate}
-              onChange={e => setToDate(e.target.value)}
-              className="border p-2 rounded"
+              onChange={(e) => setToDate(e.target.value)}
+              className="border rounded p-2 ml-2"
             />
           </div>
-          <button onClick={fetchData} className="mt-5 bg-black text-white px-4 py-2 rounded hover:bg-pink-600">
+          <button onClick={fetchData} className="px-4 py-2 bg-black text-white rounded-full">
             Filter
           </button>
         </div>
       )}
 
-      {/* Add Button */}
-      <div className="text-right">
-        <button
-          onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          + Add
-        </button>
-      </div>
-
-      {/* Table */}
-      <table className="w-full table-auto border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            {data.length > 0 &&
-              Object.keys(data[0]).map(key => <th key={key} className="p-2 border">{key}</th>)}
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map(item => (
-            <tr key={item.id} className="hover:bg-gray-50">
-              {Object.values(item).map((val, i) => (
-                <td key={i} className="p-2 border">{String(val)}</td>
+      {/* --- Data tables --- */}
+      {tab === "appointments" && (
+        <div className="overflow-x-auto">
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2">Date</th>
+                <th className="p-2">Client</th>
+                <th className="p-2">Master</th>
+                <th className="p-2">Services</th>
+              </tr>
+            </thead>
+            <tbody>
+              {appointments.map((a) => (
+                <tr key={a.id}>
+                  <td className="border p-2">{a.datatime}</td>
+                  <td className="border p-2">{a.client.firstName} {a.client.surname} ({a.client.mobile})</td>
+                  <td className="border p-2">{a.master.firstName} {a.master.surname}</td>
+                  <td className="border p-2">
+                    {a.services.map((s) => s.serviceName).join(", ")}
+                  </td>
+                </tr>
               ))}
-              <td className="p-2 border space-x-2">
-                <button onClick={() => handleEdit(item)} className="text-blue-500 hover:underline">Edit</button>
-                <button onClick={() => handleDelete(item.id)} className="text-red-500 hover:underline">Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === "services" && (
+        <div className="overflow-x-auto">
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2">Name</th>
+                <th className="p-2">Price</th>
+                <th className="p-2">Period</th>
+                <th className="p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.map((s) => (
+                <tr key={s.id}>
+                  <td className="border p-2">{s.serviceName}</td>
+                  <td className="border p-2">€{s.price}</td>
+                  <td className="border p-2">{s.period} min</td>
+                  <td className="border p-2 space-x-2">
+                    <button className="text-blue-600">Edit</button>
+                    <button className="text-red-600">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === "masters" && (
+        <div className="overflow-x-auto">
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2">First Name</th>
+                <th className="p-2">Surname</th>
+                <th className="p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {masters.map((m) => (
+                <tr key={m.id}>
+                  <td className="border p-2">{m.firstName}</td>
+                  <td className="border p-2">{m.surname}</td>
+                  <td className="border p-2 space-x-2">
+                    <button className="text-blue-600">Edit</button>
+                    <button className="text-red-600">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {tab === "clients" && (
+        <div className="overflow-x-auto">
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2">Name</th>
+                <th className="p-2">Mobile</th>
+                <th className="p-2">Email</th>
+                <th className="p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clients.map((c) => (
+                <tr key={c.id}>
+                  <td className="border p-2">{c.firstName} {c.surname}</td>
+                  <td className="border p-2">{c.mobile}</td>
+                  <td className="border p-2">{c.email}</td>
+                  <td className="border p-2">
+                    <button className="text-red-600">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
